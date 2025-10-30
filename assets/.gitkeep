@@ -1,0 +1,8 @@
+# Add your app icons and splash screens here
+
+Required files:
+- icon.png (1024x1024)
+- adaptive-icon.png (1024x1024)
+- splash.png (2048x2048 or similar)
+- notification-icon.png (96x96)
+- favicon.png (48x48)
