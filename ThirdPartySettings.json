@@ -1,0 +1,257 @@
+{
+  "description": "Central configuration for all third-party services and integrations",
+  "lastUpdated": "2025-10-30",
+  
+  "sms": {
+    "provider": "twilio",
+    "alternatives": ["aws_sns", "msg91", "textlocal"],
+    "recommendation": "Twilio for global reach, MSG91 for India-specific bulk SMS",
+    "setup": {
+      "twilio": {
+        "accountSid": "PLACEHOLDER_TWILIO_ACCOUNT_SID",
+        "authToken": "PLACEHOLDER_TWILIO_AUTH_TOKEN",
+        "phoneNumber": "PLACEHOLDER_TWILIO_PHONE",
+        "instructions": "1. Sign up at https://www.twilio.com 2. Get Account SID and Auth Token from console 3. Purchase a phone number 4. Update credentials in backend API configuration"
+      },
+      "msg91": {
+        "authKey": "PLACEHOLDER_MSG91_AUTH_KEY",
+        "senderId": "PLACEHOLDER_SENDER_ID",
+        "instructions": "India-specific: Sign up at https://msg91.com, verify your account, get Auth Key from dashboard"
+      }
+    }
+  },
+
+  "email": {
+    "provider": "sendgrid",
+    "alternatives": ["aws_ses", "mailgun", "postmark"],
+    "recommendation": "SendGrid for ease of use and deliverability, AWS SES for cost at scale",
+    "setup": {
+      "sendgrid": {
+        "apiKey": "PLACEHOLDER_SENDGRID_API_KEY",
+        "fromEmail": "noreply@shivamitcs.in",
+        "fromName": "SIS Mobile",
+        "instructions": "1. Sign up at https://sendgrid.com 2. Create API key with Mail Send permissions 3. Verify sender domain 4. Update in backend configuration"
+      },
+      "aws_ses": {
+        "region": "ap-south-1",
+        "accessKeyId": "PLACEHOLDER_AWS_ACCESS_KEY",
+        "secretAccessKey": "PLACEHOLDER_AWS_SECRET",
+        "instructions": "More cost-effective at scale, requires AWS account setup and domain verification"
+      }
+    }
+  },
+
+  "push_notifications": {
+    "android": {
+      "provider": "firebase_fcm",
+      "setup": {
+        "projectId": "PLACEHOLDER_FIREBASE_PROJECT_ID",
+        "apiKey": "PLACEHOLDER_FIREBASE_API_KEY",
+        "appId": "PLACEHOLDER_FIREBASE_APP_ID",
+        "messagingSenderId": "PLACEHOLDER_FCM_SENDER_ID",
+        "serverKey": "PLACEHOLDER_FCM_SERVER_KEY",
+        "instructions": "1. Create project at https://console.firebase.google.com 2. Add Android app 3. Download google-services.json to android/app/ 4. Enable Cloud Messaging 5. Get Server Key for backend from Project Settings > Cloud Messaging"
+      }
+    },
+    "ios": {
+      "provider": "apns",
+      "setup": {
+        "keyId": "PLACEHOLDER_APNS_KEY_ID",
+        "teamId": "PLACEHOLDER_APPLE_TEAM_ID",
+        "bundleId": "com.shivamitcs.sismobile",
+        "authKey": "PLACEHOLDER_APNS_AUTH_KEY_P8_FILE_PATH",
+        "instructions": "1. Go to Apple Developer Account > Certificates, IDs & Profiles 2. Create APNs Auth Key 3. Download .p8 file 4. Note Key ID and Team ID 5. Upload .p8 to backend server 6. Configure in backend push notification service"
+      }
+    }
+  },
+
+  "analytics": {
+    "provider": "firebase_analytics",
+    "alternatives": ["mixpanel", "amplitude", "segment"],
+    "recommendation": "Firebase Analytics for free tier and tight integration, Mixpanel for advanced funnels",
+    "setup": {
+      "firebase": {
+        "instructions": "Automatically configured with Firebase project setup (same as push notifications)",
+        "events": ["user_login", "assignment_submit", "attendance_mark", "fee_payment", "notification_open"]
+      },
+      "mixpanel": {
+        "token": "PLACEHOLDER_MIXPANEL_TOKEN",
+        "instructions": "Sign up at https://mixpanel.com, create project, get token from Project Settings"
+      },
+      "amplitude": {
+        "apiKey": "PLACEHOLDER_AMPLITUDE_API_KEY",
+        "instructions": "Sign up at https://amplitude.com, create project, copy API Key"
+      }
+    }
+  },
+
+  "crash_reporting": {
+    "provider": "sentry",
+    "alternatives": ["firebase_crashlytics"],
+    "recommendation": "Sentry for detailed stack traces and error context, Crashlytics as backup",
+    "setup": {
+      "sentry": {
+        "dsn": "PLACEHOLDER_SENTRY_DSN",
+        "org": "shivamitcs",
+        "project": "sis-mobile",
+        "authToken": "PLACEHOLDER_SENTRY_AUTH_TOKEN",
+        "instructions": "1. Sign up at https://sentry.io 2. Create React Native project 3. Get DSN from Project Settings 4. Create Auth Token for source maps 5. Run 'npx @sentry/wizard@latest -i reactNative' for setup"
+      },
+      "crashlytics": {
+        "instructions": "Automatically configured with Firebase project, enable in Firebase console"
+      }
+    }
+  },
+
+  "realtime_messaging": {
+    "provider": "signalr",
+    "setup": {
+      "hubUrl": "https://api.shivamitcs.in/hubs/notifications",
+      "instructions": "Already configured in backend API. Hub endpoints: /hubs/notifications, /hubs/messaging, /hubs/attendance"
+    }
+  },
+
+  "video_conferencing": {
+    "provider": "agora",
+    "alternatives": ["twilio_video", "jitsi", "zoom_sdk"],
+    "recommendation": "Agora for quality and pricing in India, Twilio for simplicity",
+    "setup": {
+      "agora": {
+        "appId": "PLACEHOLDER_AGORA_APP_ID",
+        "appCertificate": "PLACEHOLDER_AGORA_APP_CERTIFICATE",
+        "instructions": "1. Sign up at https://www.agora.io 2. Create project 3. Get App ID from console 4. Enable App Certificate for token generation 5. Implement token generation in backend for secure channels"
+      },
+      "twilio_video": {
+        "accountSid": "PLACEHOLDER_TWILIO_ACCOUNT_SID",
+        "apiKeySid": "PLACEHOLDER_TWILIO_API_KEY_SID",
+        "apiKeySecret": "PLACEHOLDER_TWILIO_API_SECRET",
+        "instructions": "Can reuse Twilio account, create API Key for video rooms"
+      }
+    },
+    "status": "OPTIONAL - Enable when live class feature is ready"
+  },
+
+  "payments": {
+    "india": {
+      "provider": "razorpay",
+      "setup": {
+        "keyId": "PLACEHOLDER_RAZORPAY_KEY_ID",
+        "keySecret": "PLACEHOLDER_RAZORPAY_KEY_SECRET",
+        "webhookSecret": "PLACEHOLDER_RAZORPAY_WEBHOOK_SECRET",
+        "instructions": "1. Sign up at https://razorpay.com 2. Complete KYC 3. Get Key ID and Secret from Dashboard Settings 4. Configure webhook URL in dashboard to https://api.shivamitcs.in/webhooks/razorpay 5. Copy webhook secret"
+      }
+    },
+    "global": {
+      "provider": "stripe",
+      "setup": {
+        "publishableKey": "PLACEHOLDER_STRIPE_PUBLISHABLE_KEY",
+        "secretKey": "PLACEHOLDER_STRIPE_SECRET_KEY",
+        "webhookSecret": "PLACEHOLDER_STRIPE_WEBHOOK_SECRET",
+        "instructions": "1. Sign up at https://stripe.com 2. Get publishable and secret keys from Developers > API keys 3. Configure webhook endpoint for payment events"
+      }
+    }
+  },
+
+  "file_storage": {
+    "provider": "aws_s3",
+    "alternatives": ["azure_blob", "cloudinary"],
+    "recommendation": "AWS S3 for cost and flexibility, Cloudinary for image optimization",
+    "setup": {
+      "aws_s3": {
+        "region": "ap-south-1",
+        "bucket": "sis-mobile-uploads",
+        "accessKeyId": "PLACEHOLDER_AWS_ACCESS_KEY_ID",
+        "secretAccessKey": "PLACEHOLDER_AWS_SECRET_ACCESS_KEY",
+        "instructions": "1. Create AWS account 2. Create S3 bucket with private access 3. Create IAM user with S3 permissions 4. Generate access key pair 5. Configure CORS policy on bucket 6. Backend should generate presigned URLs for uploads"
+      },
+      "cloudinary": {
+        "cloudName": "PLACEHOLDER_CLOUDINARY_CLOUD_NAME",
+        "apiKey": "PLACEHOLDER_CLOUDINARY_API_KEY",
+        "apiSecret": "PLACEHOLDER_CLOUDINARY_API_SECRET",
+        "instructions": "Alternative for image/video uploads with automatic optimization. Sign up at https://cloudinary.com"
+      }
+    }
+  },
+
+  "maps_location": {
+    "provider": "google_maps",
+    "setup": {
+      "apiKey": "PLACEHOLDER_GOOGLE_MAPS_API_KEY",
+      "instructions": "For transport tracking feature: 1. Enable Maps SDK in Google Cloud Console 2. Create API key with restrictions 3. Enable Places API and Directions API",
+      "status": "OPTIONAL - Enable for transport/bus tracking feature"
+    }
+  },
+
+  "ocr_document_scanning": {
+    "provider": "google_mlkit",
+    "alternatives": ["aws_textract"],
+    "setup": {
+      "mlkit": {
+        "instructions": "Google ML Kit is free and runs on-device. Already integrated via react-native-vision-camera + ML Kit plugin. No API keys needed for basic OCR."
+      },
+      "textract": {
+        "instructions": "For advanced document analysis, use AWS Textract. Requires AWS credentials (same as S3)."
+      }
+    },
+    "status": "OPTIONAL - For scanning certificates, ID cards, etc."
+  },
+
+  "internationalization": {
+    "provider": "i18next",
+    "setup": {
+      "supportedLanguages": ["en", "hi", "gu"],
+      "instructions": "Already configured in app. Add translations in src/locales/{lang}/translation.json files"
+    }
+  },
+
+  "feature_flags": {
+    "provider": "launchdarkly",
+    "alternatives": ["server_based_flags"],
+    "recommendation": "Start with server-based flags (simple API endpoint), upgrade to LaunchDarkly for advanced targeting",
+    "setup": {
+      "launchdarkly": {
+        "sdkKey": "PLACEHOLDER_LAUNCHDARKLY_MOBILE_KEY",
+        "instructions": "1. Sign up at https://launchdarkly.com 2. Create project 3. Get mobile SDK key 4. Install @launchdarkly/react-native-client-sdk",
+        "status": "OPTIONAL - Can start with server-side feature flags via API"
+      }
+    }
+  },
+
+  "biometric_auth": {
+    "provider": "react_native_biometrics",
+    "setup": {
+      "instructions": "Already integrated. Uses device native biometric APIs (Face ID, Touch ID, fingerprint). No external service needed. Enable in user settings."
+    }
+  },
+
+  "deep_linking": {
+    "setup": {
+      "scheme": "sismobile",
+      "domain": "sismobile.shivamitcs.in",
+      "instructions": "1. Configure universal links for iOS (apple-app-site-association) 2. Configure App Links for Android (assetlinks.json) 3. Host verification files on domain 4. Used for: password reset links, direct navigation to assignments, share links"
+    }
+  },
+
+  "backend_api": {
+    "baseUrl": "https://api.shivamitcs.in",
+    "swagger": "https://api.shivamitcs.in/swagger/index.html",
+    "signalrHubs": {
+      "notifications": "https://api.shivamitcs.in/hubs/notifications",
+      "messaging": "https://api.shivamitcs.in/hubs/messaging",
+      "attendance": "https://api.shivamitcs.in/hubs/attendance"
+    },
+    "authentication": {
+      "type": "JWT",
+      "accessTokenExpiry": "1 hour",
+      "refreshTokenExpiry": "7 days",
+      "storage": "react-native-keychain (secure)"
+    }
+  },
+
+  "notes": {
+    "priority": "Start with: Firebase (push + analytics + crash), Sentry, Razorpay/Stripe, AWS S3, SendGrid, Twilio",
+    "optional": "Video calls, OCR, LaunchDarkly, Mixpanel can be added later",
+    "security": "NEVER commit this file with real credentials to git. Use environment variables and secrets management.",
+    "testing": "All integrations should have test/sandbox modes configured initially"
+  }
+}

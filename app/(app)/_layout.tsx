@@ -1,0 +1,13 @@
+/**
+ * App Layout - Authenticated app screens
+ */
+
+import { Stack } from 'expo-router';
+
+export default function AppLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+    </Stack>
+  );
+}

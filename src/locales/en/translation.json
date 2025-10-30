@@ -1,0 +1,182 @@
+{
+  "common": {
+    "appName": "SIS Mobile",
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "phone": "Phone",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "noData": "No data available",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "emailOrPhone": "Email or Phone",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "enterOtp": "Enter OTP",
+    "requestOtp": "Request OTP",
+    "biometricLogin": "Login with Biometrics",
+    "invalidCredentials": "Invalid credentials",
+    "loginSuccess": "Login successful",
+    "logoutSuccess": "Logout successful"
+  },
+  
+  "dashboard": {
+    "title": "Dashboard",
+    "upcomingClasses": "Upcoming Classes",
+    "pendingAssignments": "Pending Assignments",
+    "todaySchedule": "Today's Schedule",
+    "attendance": "Attendance",
+    "fees": "Fees",
+    "recentActivity": "Recent Activity"
+  },
+  
+  "attendance": {
+    "title": "Attendance",
+    "markAttendance": "Mark Attendance",
+    "present": "Present",
+    "absent": "Absent",
+    "late": "Late",
+    "leave": "Leave",
+    "halfDay": "Half Day",
+    "attendancePercentage": "Attendance %",
+    "totalDays": "Total Days",
+    "presentDays": "Present Days",
+    "absentDays": "Absent Days",
+    "viewDetails": "View Details"
+  },
+  
+  "assignments": {
+    "title": "Assignments",
+    "createAssignment": "Create Assignment",
+    "pendingAssignments": "Pending Assignments",
+    "submittedAssignments": "Submitted",
+    "gradedAssignments": "Graded",
+    "dueDate": "Due Date",
+    "submitAssignment": "Submit Assignment",
+    "viewSubmissions": "View Submissions",
+    "gradeAssignment": "Grade Assignment",
+    "marks": "Marks",
+    "feedback": "Feedback",
+    "attachments": "Attachments",
+    "description": "Description"
+  },
+  
+  "exams": {
+    "title": "Exams",
+    "upcomingExams": "Upcoming Exams",
+    "results": "Results",
+    "reportCard": "Report Card",
+    "examSchedule": "Exam Schedule",
+    "marks": "Marks",
+    "grade": "Grade",
+    "percentage": "Percentage",
+    "rank": "Rank"
+  },
+  
+  "fees": {
+    "title": "Fees",
+    "feeDetails": "Fee Details",
+    "paymentHistory": "Payment History",
+    "payNow": "Pay Now",
+    "totalAmount": "Total Amount",
+    "paidAmount": "Paid Amount",
+    "pendingAmount": "Pending Amount",
+    "dueDate": "Due Date",
+    "receiptNumber": "Receipt Number",
+    "downloadReceipt": "Download Receipt",
+    "paymentSuccess": "Payment Successful",
+    "paymentFailed": "Payment Failed"
+  },
+  
+  "timetable": {
+    "title": "Timetable",
+    "today": "Today",
+    "week": "Week",
+    "subject": "Subject",
+    "teacher": "Teacher",
+    "room": "Room",
+    "time": "Time",
+    "noClasses": "No classes scheduled"
+  },
+  
+  "messages": {
+    "title": "Messages",
+    "newMessage": "New Message",
+    "sendMessage": "Send Message",
+    "typeMessage": "Type a message...",
+    "noConversations": "No conversations yet",
+    "markAsRead": "Mark as Read"
+  },
+  
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All as Read",
+    "noNotifications": "No notifications",
+    "announcement": "Announcement",
+    "assignment": "Assignment",
+    "exam": "Exam",
+    "attendance": "Attendance",
+    "fee": "Fee"
+  },
+  
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "academicInfo": "Academic Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "dateOfBirth": "Date of Birth",
+    "bloodGroup": "Blood Group",
+    "address": "Address",
+    "guardianInfo": "Guardian Information",
+    "contactInfo": "Contact Information",
+    "changeAvatar": "Change Avatar",
+    "updateSuccess": "Profile updated successfully"
+  },
+  
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "autoMode": "Auto",
+    "notificationSettings": "Notification Settings",
+    "pushNotifications": "Push Notifications",
+    "emailNotifications": "Email Notifications",
+    "smsNotifications": "SMS Notifications",
+    "biometricAuth": "Biometric Authentication",
+    "about": "About",
+    "version": "Version",
+    "termsAndConditions": "Terms and Conditions",
+    "privacyPolicy": "Privacy Policy"
+  }
+}
