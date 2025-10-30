@@ -4,10 +4,11 @@
     "slug": "sis-mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "scheme": "sismobile",
     "splash": {
-      "image": "./src/assets/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#7C3AED"
     },
@@ -22,11 +23,12 @@
         "NSPhotoLibraryUsageDescription": "This app needs photo library access to select and upload images.",
         "NSMicrophoneUsageDescription": "This app needs microphone access for video calls and recording."
       },
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "newArchEnabled": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#7C3AED"
       },
       "package": "com.shivamitcs.sismobile",
@@ -35,19 +37,21 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "RECORD_AUDIO",
-        "NOTIFICATIONS"
+        "POST_NOTIFICATIONS"
       ],
-      "versionCode": 1
+      "versionCode": 1,
+      "newArchEnabled": true
     },
     "web": {
-      "favicon": "./src/assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
       [
         "expo-notifications",
         {
-          "icon": "./src/assets/notification-icon.png",
+          "icon": "./assets/notification-icon.png",
           "color": "#7C3AED"
         }
       ],
@@ -63,17 +67,33 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos"
         }
       ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/crashlytics",
-      "react-native-vision-camera",
-      "expo-secure-store",
       [
-        "@sentry/react-native",
+        "@react-native-firebase/app",
         {
-          "organization": "shivamitcs",
-          "project": "sis-mobile"
+          "android": {
+            "googleServicesFile": "./google-services.json"
+          },
+          "ios": {
+            "googleServicesFile": "./GoogleService-Info.plist"
+          }
         }
-      ]
+      ],
+      "@react-native-firebase/crashlytics",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0",
+            "kotlinVersion": "1.9.24"
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "router": {
@@ -83,12 +103,6 @@
         "projectId": "YOUR_EAS_PROJECT_ID"
       }
     },
-    "owner": "shivamitcs",
-    "updates": {
-      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "owner": "shivamitcs"
   }
 }

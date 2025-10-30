@@ -34,9 +34,9 @@ A comprehensive cross-platform mobile application for School Information System 
 
 ## 🛠 Tech Stack
 
-- **Framework:** React Native (Expo) + TypeScript
+- **Framework:** React Native 0.76.5 + Expo SDK 52 + TypeScript
 - **State Management:** Redux Toolkit + RTK Query
-- **Navigation:** Expo Router (file-based routing)
+- **Navigation:** Expo Router v4 (file-based routing)
 - **UI/Styling:** Custom theme system (Tailwind-inspired)
 - **Real-time:** SignalR for live updates
 - **Push Notifications:** Firebase Cloud Messaging (FCM)
@@ -46,6 +46,7 @@ A comprehensive cross-platform mobile application for School Information System 
 - **Analytics:** Firebase Analytics + Sentry
 - **i18n:** i18next (English, Hindi, Gujarati)
 - **CI/CD:** GitHub Actions + EAS Build
+- **New Architecture:** TurboModules & Fabric Ready
 
 ## 📋 Prerequisites
 
@@ -94,20 +95,34 @@ A comprehensive cross-platform mobile application for School Information System 
 
 ## 🚀 Running the App
 
+### ⚠️ IMPORTANT: First Time Setup
+
+**Before running, you need:**
+
+1. **Add App Icons** (see `/assets/.gitkeep` for requirements)
+2. **Add Firebase Config Files:**
+   - `google-services.json` (Android)
+   - `GoogleService-Info.plist` (iOS)
+   - See examples: `google-services.json.example` and `GoogleService-Info.plist.example`
+
 ### Development Mode
 
 ```bash
-# Start Expo development server
+# Clean install (RECOMMENDED FIRST TIME)
+rm -rf node_modules package-lock.json
+npm install
+
+# Start with clear cache
 npm start
+
+# Or clear cache manually
+npx expo start -c
 
 # Run on iOS simulator
 npm run ios
 
 # Run on Android emulator
 npm run android
-
-# Run on web
-npm run web
 ```
 
 ### Preview Build
