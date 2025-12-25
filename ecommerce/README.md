@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SuperStore - World-Class E-Commerce Super App
 
-## Getting Started
+A full-featured e-commerce application built with Next.js 15, MongoDB, Prisma, and modern web technologies.
 
-First, run the development server:
+## ✨ Features
+
+### Customer Features
+- 📱 Responsive, mobile-first design with glassmorphism UI
+- 🔍 Advanced product search and filtering
+- 🛒 Real-time shopping cart with persistence
+- ❤️ Wishlist functionality
+- 🤖 AI-powered shopping assistant
+- 👤 User authentication (Google OAuth + Email/Password)
+- 📍 Multiple shipping addresses
+- 💳 Multiple payment methods (Card, COD, UPI)
+- 📦 Order tracking
+- ⭐ Product reviews and ratings
+
+### Admin Features
+- 📊 Analytics dashboard
+- 📦 Product management (CRUD)
+- 📁 Category management
+- 📄 Order management
+- 👥 Customer management
+- 🏷️ Promotion & coupon management
+- 📝 Blog management
+- 📢 Modal/popup configuration
+- 🚨 System alerts
+- 📧 Contact message inbox
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 15 (App Router), React 19 |
+| Styling | Tailwind CSS, shadcn/ui, Framer Motion |
+| State | Zustand (Client), React Context |
+| Database | MongoDB with Prisma ORM |
+| Auth | NextAuth.js v5 (Auth.js) |
+| Cache | Upstash Redis (with mock fallback) |
+| Payments | Stripe |
+| AI | OpenAI GPT-4 (with mock fallback) |
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB (local or Atlas)
+- Yarn package manager
+
+### Installation
 
 ```bash
-npm run dev
-# or
+# Clone the repository
+cd /app/ecommerce
+
+# Install dependencies
+yarn install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Generate Prisma client
+npx prisma generate
+
+# Push database schema
+npx prisma db push
+
+# Run development server
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── (shop)/          # Customer-facing pages
+│   │   ├── page.tsx     # Homepage
+│   │   ├── products/    # Product listing & detail
+│   │   ├── cart/        # Shopping cart
+│   │   └── checkout/    # Checkout flow
+│   ├── (admin)/         # Admin dashboard
+│   │   └── admin/       # Admin pages
+│   ├── auth/            # Authentication pages
+│   └── api/             # API routes
+├── components/
+│   ├── ui/              # shadcn/ui components
+│   ├── layout/          # Header, Footer
+│   ├── product/         # Product components
+│   ├── cart/            # Cart components
+│   ├── admin/           # Admin components
+│   └── ai-chat/         # AI chat widget
+├── lib/                 # Utilities
+│   ├── prisma.ts        # Prisma client
+│   ├── auth.ts          # NextAuth config
+│   ├── redis.ts         # Cache layer
+│   ├── storage.ts       # File storage
+│   └── utils.ts         # Helper functions
+├── stores/              # Zustand stores
+├── types/               # TypeScript types
+└── prisma/
+    └── schema.prisma    # Database schema
+```
 
-## Learn More
+## 🔐 Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.example` for all available options. Key variables:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | MongoDB connection string |
+| `NEXTAUTH_SECRET` | Auth encryption key |
+| `CACHE_MODE` | `mock` or `redis` |
+| `STORAGE_MODE` | `local` or `cloud` |
+| `AI_CHAT_MODE` | `mock` or `live` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📚 Documentation
 
-## Deploy on Vercel
+- [Deployment Guide](./DEPLOYMENT.md)
+- [API Documentation](/api-docs)
+- [Contributing Guide](./CONTRIBUTING.md)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📄 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License - feel free to use this project for your own purposes.
+
+---
+
+Built with ❤️ using Next.js and modern web technologies.
