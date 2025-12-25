@@ -482,7 +482,6 @@ model Order {
   cancelledAt DateTime?
   cancelReason String?
   
-  @@index([orderNumber])
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@map("orders")
