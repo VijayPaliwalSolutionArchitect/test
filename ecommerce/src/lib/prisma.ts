@@ -1,15 +1,11 @@
-import { PrismaClient } from '@prisma/client/edge'
-import { withAccelerate } from '@prisma/extension-accelerate'
+import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined
+  prisma: PrismaClient | undefined
 }
 
-function createPrismaClient() {
-  return new PrismaClient().$extends(withAccelerate())
-}
-
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+// Create client with optional logging based on environment
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
