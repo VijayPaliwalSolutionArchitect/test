@@ -563,7 +563,6 @@ model Promotion {
   updatedAt   DateTime @updatedAt
   createdById String?  @db.ObjectId
   
-  @@index([code])
   @@index([isActive, startDate, endDate])
   @@map("promotions")
 }
