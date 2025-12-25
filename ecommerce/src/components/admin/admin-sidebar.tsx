@@ -103,7 +103,6 @@ const supportNav = [
     href: "/admin/alerts",
     icon: Bell,
     badge: "3",
-    badgeColor: "warning" as const,
   },
 ]
 
