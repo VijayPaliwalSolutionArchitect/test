@@ -5,10 +5,10 @@ import { CACHE_KEYS, getOrSet, CACHE_TTL, invalidateCache } from "@/lib/redis"
 // GET /api/products/[slug] - Get single product
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
 
     // Try cache first
     const product = await getOrSet(
@@ -64,10 +64,10 @@ export async function GET(
 // PUT /api/products/[slug] - Update product (Admin only)
 export async function PUT(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
     const body = await request.json()
 
     const product = await prisma.product.update({
@@ -91,10 +91,10 @@ export async function PUT(
 // DELETE /api/products/[slug] - Soft delete product (Admin only)
 export async function DELETE(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
 
     await prisma.product.update({
       where: { slug },
