@@ -1,14 +1,1103 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ===========================================
+// E-COMMERCE SUPER APP - PRISMA SCHEMA
+// ===========================================
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USERS & AUTHENTICATION
+// ============================================================
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  emailVerified DateTime?
+  phoneNumber   String?   @unique
+  phoneVerified Boolean   @default(false)
+  
+  // Profile
+  firstName     String?
+  lastName      String?
+  displayName   String?
+  avatar        String?
+  dateOfBirth   DateTime?
+  gender        Gender?
+  
+  // Auth
+  passwordHash  String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Security
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  
+  // Role & Permissions
+  role          Role      @default(CUSTOMER)
+  permissions   String[]
+  vendorId      String?   @db.ObjectId
+  vendor        Vendor?   @relation(fields: [vendorId], references: [id])
+  
+  // Preferences
+  language      String    @default("en-US")
+  currency      String    @default("USD")
+  theme         Theme     @default(AUTO)
+  
+  // Notifications
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  pushNotifications  Boolean @default(true)
+  
+  // Loyalty
+  loyaltyPoints   Int       @default(0)
+  loyaltyTier     LoyaltyTier @default(BRONZE)
+  referralCode    String    @unique @default(uuid())
+  referredById    String?   @db.ObjectId
+  referredBy      User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  referrals       User[]    @relation("Referrals")
+  
+  // Analytics
+  lifetimeValue   Float     @default(0)
+  avgOrderValue   Float     @default(0)
+  purchaseFreq    Int       @default(0)
+  lastPurchaseAt  DateTime?
+  
+  // Relations
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+  carts         Cart[]
+  wishlistItems WishlistItem[]
+  aiChatSessions AiChatSession[]
+  
+  // Metadata
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  loginCount    Int       @default(0)
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String?
+  accessToken       String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  userAgent    String?
+  ipAddress    String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================
+// PRODUCTS & CATALOG
+// ============================================================
+
+model Category {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String    @unique
+  description String?
+  
+  // Hierarchy
+  parentId    String?   @db.ObjectId
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Category[] @relation("CategoryHierarchy")
+  path        String    // "electronics/audio/headphones"
+  level       Int       @default(0)
+  
+  // Media
+  image       String?
+  icon        String?
+  
+  // Display
+  displayOrder Int      @default(0)
+  isFeatured   Boolean  @default(false)
+  isVisible    Boolean  @default(true)
+  color        String?
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Relations
+  products    Product[]
+  
+  // Metadata
+  productCount Int      @default(0)
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String   @unique
+  sku         String   @unique
+  barcode     String?
+  brand       String
+  
+  // Classification
+  categoryId  String   @db.ObjectId
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryPath String?
+  tags        String[]
+  
+  // Pricing
+  price           Float
+  comparePrice    Float?
+  costPrice       Float?
+  currency        String  @default("USD")
+  taxRate         Float   @default(0)
+  
+  // Inventory
+  trackInventory    Boolean @default(true)
+  stockQuantity     Int     @default(0)
+  lowStockThreshold Int     @default(10)
+  allowBackorder    Boolean @default(false)
+  weight            Float?
+  length            Float?
+  width             Float?
+  height            Float?
+  
+  // Variants (JSON for flexibility)
+  hasVariants Boolean  @default(false)
+  variants    Json?    // Array of variant objects
+  
+  // Attributes (Dynamic, schema-less)
+  attributes  Json?    // Flexible key-value pairs
+  
+  // Media
+  images      Json     // Array of image objects
+  videos      Json?    // Array of video objects
+  
+  // Content
+  shortDescription String?
+  fullDescription  String?
+  specifications   Json?   // Array of spec groups
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // AI Features
+  aiTags          String[]
+  
+  // Reviews & Ratings
+  ratingAverage   Float @default(0)
+  ratingCount     Int   @default(0)
+  reviews         Review[]
+  
+  // Analytics
+  viewCount       Int   @default(0)
+  addToCartCount  Int   @default(0)
+  purchaseCount   Int   @default(0)
+  
+  // Shipping
+  freeShipping      Boolean @default(false)
+  shippingClasses   String[]
+  estimatedDeliveryMin Int?
+  estimatedDeliveryMax Int?
+  
+  // Status
+  status      ProductStatus @default(DRAFT)
+  isVisible   Boolean       @default(true)
+  isFeatured  Boolean       @default(false)
+  publishedAt DateTime?
+  
+  // Related Products
+  relatedProductIds   String[] @db.ObjectId
+  
+  // Multi-vendor
+  vendorId           String?  @db.ObjectId
+  vendor             Vendor?  @relation(fields: [vendorId], references: [id])
+  vendorCommission   Float?
+  
+  // Relations
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+  
+  // Metadata
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?   @db.ObjectId
+  
+  @@index([categoryId, status, isDeleted])
+  @@index([brand, status])
+  @@index([isFeatured, status])
+  @@map("products")
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId   String?  @db.ObjectId
+  
+  // Content
+  rating    Int
+  title     String?
+  content   String
+  
+  // Media
+  images    Json?    // Array of image URLs
+  
+  // AI Analysis
+  sentiment      Sentiment @default(NEUTRAL)
+  sentimentScore Float     @default(0)
+  
+  // Helpfulness
+  helpfulCount       Int   @default(0)
+  notHelpfulCount    Int   @default(0)
+  
+  // Verification
+  isVerifiedPurchase Boolean @default(false)
+  
+  // Moderation
+  status        ReviewStatus @default(PENDING)
+  moderatedBy   String?      @db.ObjectId
+  moderatedAt   DateTime?
+  
+  // Response from seller
+  response      String?
+  respondedAt   DateTime?
+  
+  // Metadata
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([productId, status, createdAt])
+  @@map("reviews")
+}
+
+// ============================================================
+// CART & CHECKOUT
+// ============================================================
+
+model Cart {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+  
+  // Items
+  items     CartItem[]
+  
+  // Totals
+  subtotal  Float    @default(0)
+  discount  Float    @default(0)
+  shipping  Float    @default(0)
+  tax       Float    @default(0)
+  total     Float    @default(0)
+  
+  // Applied Promotions
+  appliedCoupons Json?  // Array of applied coupon objects
+  
+  // Shipping
+  shippingAddressId String? @db.ObjectId
+  shippingMethodId  String?
+  
+  // Metadata
+  lastActivityAt DateTime  @default(now())
+  expiresAt      DateTime?
+  isAbandoned    Boolean   @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([sessionId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String  @db.ObjectId
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  variantId String?
+  
+  // Snapshot
+  name     String
+  sku      String
+  image    String?
+  quantity Int
+  price    Float
+  subtotal Float
+  
+  // Customization
+  customization Json?  // Engraving, gift wrap, etc.
+  
+  addedAt DateTime @default(now())
+  
+  @@map("cart_items")
+}
+
+// ============================================================
+// ORDERS & FULFILLMENT
+// ============================================================
+
+model Order {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber String   @unique
+  
+  // Customer
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  email       String
+  phone       String?
+  
+  // Items
+  items       OrderItem[]
+  
+  // Pricing
+  subtotal    Float
+  discount    Float    @default(0)
+  shipping    Float    @default(0)
+  tax         Float    @default(0)
+  total       Float
+  currency    String   @default("USD")
+  
+  // Discounts
+  appliedCoupons      Json?   // Array of applied coupon objects
+  loyaltyPointsUsed   Int     @default(0)
+  loyaltyPointsEarned Int     @default(0)
+  
+  // Addresses (Embedded for immutability)
+  shippingAddress Json
+  billingAddress  Json?
+  
+  // Shipping
+  shippingMethod    String?
+  shippingCarrier   String?
+  shippingCost      Float    @default(0)
+  trackingNumber    String?
+  trackingUrl       String?
+  estimatedDeliveryMin DateTime?
+  estimatedDeliveryMax DateTime?
+  
+  // Payment
+  paymentMethod     PaymentMethod
+  paymentStatus     PaymentStatus @default(PENDING)
+  transactionId     String?
+  paymentGateway    String?
+  gatewayOrderId    String?
+  paidAt            DateTime?
+  
+  // Status
+  status      OrderStatus @default(PENDING)
+  timeline    Json?       // Array of status changes with timestamps
+  
+  // Fulfillment
+  fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)
+  fulfilledAt       DateTime?
+  deliveredAt       DateTime?
+  
+  // Notes
+  customerNote String?
+  internalNote String?
+  
+  // Analytics
+  source    String?
+  channel   String?
+  utmSource String?
+  utmMedium String?
+  utmCampaign String?
+  
+  // Risk
+  riskScore Float?
+  riskLevel RiskLevel?
+  ipAddress String?
+  userAgent String?
+  
+  // Multi-vendor
+  vendorId               String? @db.ObjectId
+  vendor                 Vendor? @relation(fields: [vendorId], references: [id])
+  vendorCommissionAmount Float?
+  
+  // Metadata
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  cancelledAt DateTime?
+  cancelReason String?
+  
+  @@index([orderNumber])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String  @db.ObjectId
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  variantId String?
+  
+  // Snapshot (immutable)
+  name     String
+  sku      String
+  image    String?
+  quantity Int
+  price    Float
+  subtotal Float
+  attributes Json?  // Variant attributes at time of purchase
+  
+  // Fulfillment per item
+  status         OrderItemStatus @default(PENDING)
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  
+  @@map("order_items")
+}
+
+// ============================================================
+// PROMOTIONS & DISCOUNTS
+// ============================================================
+
+model Promotion {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  code String? @unique
+  type PromotionType
+  
+  // Discount Configuration
+  discountType  String    // PERCENTAGE, FIXED_AMOUNT
+  discountValue Float
+  maxDiscount   Float?
+  
+  // Conditions
+  minPurchaseAmount Float?
+  maxPurchaseAmount Float?
+  applicableProductIds  String[] @db.ObjectId
+  applicableCategoryIds String[] @db.ObjectId
+  excludedProductIds    String[] @db.ObjectId
+  userSegments          String[]
+  maxUsesPerUser        Int?
+  newCustomersOnly      Boolean  @default(false)
+  
+  // Schedule
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  
+  // Usage Limits
+  maxTotalUses      Int?
+  currentUsageCount Int  @default(0)
+  
+  // Display
+  displayName String?
+  description String?
+  bannerImage String?
+  badgeText   String?
+  
+  // Priority
+  priority           Int     @default(0)
+  canStackWithOthers Boolean @default(false)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?  @db.ObjectId
+  
+  @@index([code])
+  @@index([isActive, startDate, endDate])
+  @@map("promotions")
+}
+
+// ============================================================
+// USER DATA
+// ============================================================
+
+model Address {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String  @db.ObjectId
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      AddressType
+  isDefault Boolean     @default(false)
+  label     String?     // "Home", "Work", etc.
+  
+  firstName    String
+  lastName     String
+  company      String?
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  phone        String
+  
+  // Geocoding
+  latitude     Float?
+  longitude    Float?
+  
+  // Metadata
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
+  
+  @@index([userId, isDefault])
+  @@map("addresses")
+}
+
+model WishlistItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  addedAt   DateTime @default(now())
+  
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+// ============================================================
+// AI & CHAT
+// ============================================================
+
+model AiChatSession {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String?  @db.ObjectId
+  user     User?    @relation(fields: [userId], references: [id])
+  sessionId String
+  
+  // Session metadata
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+  messageCount Int       @default(0)
+  
+  // AI Context
+  conversationSummary String?
+  intent              String?
+  sentiment           Sentiment @default(NEUTRAL)
+  
+  // Outcomes
+  resolved            Boolean @default(false)
+  escalatedToHuman    Boolean @default(false)
+  leadToConversion    Boolean @default(false)
+  orderId             String? @db.ObjectId
+  
+  // Relations
+  messages AiMessage[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("ai_chat_sessions")
+}
+
+model AiMessage {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String        @db.ObjectId
+  session   AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  role    MessageRole
+  content String
+  
+  // AI Metadata
+  model           String?
+  tokensUsed      Int?
+  latency         Int?
+  
+  timestamp DateTime @default(now())
+  
+  @@map("ai_messages")
+}
+
+// ============================================================
+// MODALS & UI CONFIGURATION
+// ============================================================
+
+model ModalConfig {
+  id   String    @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  type ModalType
+  
+  // Content
+  title       String?
+  htmlContent String?
+  customCss   String?
+  
+  // Trigger Rules
+  triggerType  String   // ON_LOAD, ON_EXIT, ON_SCROLL, ON_TIME
+  triggerValue Json?    // Specific trigger configuration
+  
+  // Schedule
+  startDate      DateTime?
+  endDate        DateTime?
+  
+  // Display Settings
+  position         String @default("center")  // center, top, bottom, etc.
+  animation        String @default("fade")    // fade, slide, scale
+  backdropBlur     Boolean @default(true)
+  closeButton      Boolean @default(true)
+  closeOnBackdrop  Boolean @default(true)
+  closeAfter       Int?    // Auto close after X seconds
+  
+  // Targeting
+  deviceTypes     String[]  // desktop, mobile, tablet
+  countries       String[]
+  newVisitorsOnly Boolean   @default(false)
+  
+  // Analytics
+  impressions     Int   @default(0)
+  interactions    Int   @default(0)
+  
+  isActive Boolean @default(true)
+  priority Int     @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?  @db.ObjectId
+  
+  @@map("modal_configs")
+}
+
+// ============================================================
+// ANALYTICS & TELEMETRY
+// ============================================================
+
+model TelemetryEvent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  sessionId String
+  
+  // Event
+  eventType String
+  eventData Json?
+  
+  // Page Context
+  pageUrl   String?
+  pagePath  String?
+  referrer  String?
+  
+  // Device Info
+  deviceType String?
+  os         String?
+  browser    String?
+  
+  // E-commerce Context
+  productId  String? @db.ObjectId
+  categoryId String? @db.ObjectId
+  
+  // Geo
+  ipAddress String?
+  country   String?
+  city      String?
+  
+  timestamp DateTime  @default(now())
+  
+  @@index([userId, timestamp])
+  @@index([eventType, timestamp])
+  @@map("telemetry_events")
+}
+
+model AuditLog {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // What changed
+  collection  String
+  documentId  String   @db.ObjectId
+  operation   AuditOperation
+  
+  // Changes
+  changes     Json?    // Array of field changes
+  
+  // Who made the change
+  performedBy     String? @db.ObjectId
+  performedByRole String?
+  
+  // Context
+  reason    String?
+  ipAddress String?
+  userAgent String?
+  
+  timestamp DateTime @default(now())
+  
+  @@index([collection, documentId, timestamp])
+  @@index([performedBy, timestamp])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// SYSTEM CONFIGURATION
+// ============================================================
+
+model SystemConfig {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  key      String @unique
+  value    Json
+  category String
+  
+  description String?
+  isPublic    Boolean @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@map("system_configs")
+}
+
+// ============================================================
+// VENDOR (Multi-vendor Support)
+// ============================================================
+
+model Vendor {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String @unique
+  description String?
+  
+  // Business Info
+  businessName    String
+  businessAddress Json?
+  taxId           String?
+  
+  // Contact
+  email       String
+  phone       String?
+  website     String?
+  
+  // Branding
+  logo        String?
+  banner      String?
+  
+  // Commission
+  defaultCommission Float @default(15)
+  
+  // Relations
+  users    User[]
+  products Product[]
+  orders   Order[]
+  
+  // Status
+  status    VendorStatus @default(PENDING)
+  isActive  Boolean      @default(true)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("vendors")
+}
+
+// ============================================================
+// BLOG & CONTENT
+// ============================================================
+
+model BlogPost {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  
+  // Media
+  featuredImage String?
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Author
+  authorId    String   @db.ObjectId
+  authorName  String?
+  
+  // Categories & Tags
+  categories  String[]
+  tags        String[]
+  
+  // Status
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  
+  // Analytics
+  viewCount   Int      @default(0)
+  
+  // Metadata
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("blog_posts")
+}
+
+model ContactMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  
+  // Status
+  status    ContactStatus @default(NEW)
+  assignedTo String?      @db.ObjectId
+  resolvedAt DateTime?
+  
+  // Response
+  response  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("contact_messages")
+}
+
+model SystemAlert {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      AlertType
+  severity  AlertSeverity
+  title     String
+  message   String
+  data      Json?
+  
+  // Status
+  isRead    Boolean  @default(false)
+  isDismissed Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  
+  @@map("system_alerts")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  OUT_OF_STOCK
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  COD
+  UPI
+  PAYPAL
+  APPLE_PAY
+  GOOGLE_PAY
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  FULFILLED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+  BOGO
+  TIERED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+  BOTH
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum ModalType {
+  POPUP
+  BANNER
+  SLIDE_IN
+  FULL_SCREEN
+}
+
+enum AuditOperation {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  SPAM
+}
+
+enum AlertType {
+  SYSTEM
+  ORDER
+  INVENTORY
+  SECURITY
+  PROMOTION
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
 }
