@@ -65,7 +65,7 @@ export function CategoryForm({ categories, initialData }: CategoryFormProps) {
   }
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -80,6 +80,16 @@ export function CategoryForm({ categories, initialData }: CategoryFormProps) {
         slug: generateSlug(value),
       }))
     }
+  }
+
+  const handleSelectChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSwitchChange = (name: string, checked: boolean) => {
@@ -198,7 +208,7 @@ export function CategoryForm({ categories, initialData }: CategoryFormProps) {
                   id="parentId"
                   name="parentId"
                   value={formData.parentId}
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">None (Top Level)</option>

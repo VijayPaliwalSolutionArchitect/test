@@ -20,6 +20,12 @@ interface Category {
   slug: string
 }
 
+interface ProductImage {
+  url: string
+  alt?: string
+  isPrimary?: boolean
+}
+
 interface Product {
   id: string
   name: string
@@ -41,7 +47,7 @@ interface Product {
   isFeatured: boolean
   freeShipping: boolean
   tags: string[]
-  images: any
+  images: ProductImage[]
 }
 
 interface ProductFormProps {
@@ -86,9 +92,9 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
   }
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type } = e.target
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -117,6 +123,16 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
         }))
       }
     }
+  }
+
+  const handleSelectChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSwitchChange = (name: string, checked: boolean) => {
@@ -512,7 +528,7 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                   id="status"
                   name="status"
                   value={formData.status}
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="DRAFT">Draft</option>
@@ -552,7 +568,7 @@ export function ProductForm({ categories, initialData }: ProductFormProps) {
                   id="categoryId"
                   name="categoryId"
                   value={formData.categoryId}
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   required
                 >
