@@ -18,9 +18,25 @@ interface Category {
   slug: string
 }
 
+interface CategoryData {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  parentId?: string | null
+  image?: string | null
+  icon?: string | null
+  color?: string | null
+  displayOrder: number
+  isFeatured: boolean
+  isVisible: boolean
+  metaTitle?: string | null
+  metaDescription?: string | null
+}
+
 interface CategoryFormProps {
   categories: Category[]
-  initialData?: any
+  initialData?: Partial<CategoryData>
 }
 
 export function CategoryForm({ categories, initialData }: CategoryFormProps) {

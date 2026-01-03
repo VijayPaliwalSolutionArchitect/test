@@ -20,9 +20,33 @@ interface Category {
   slug: string
 }
 
+interface Product {
+  id: string
+  name: string
+  slug: string
+  sku: string
+  barcode?: string | null
+  brand: string
+  categoryId: string
+  price: number
+  comparePrice?: number | null
+  costPrice?: number | null
+  stockQuantity: number
+  lowStockThreshold: number
+  trackInventory: boolean
+  allowBackorder: boolean
+  shortDescription?: string | null
+  fullDescription?: string | null
+  status: string
+  isFeatured: boolean
+  freeShipping: boolean
+  tags: string[]
+  images: any
+}
+
 interface ProductFormProps {
   categories: Category[]
-  initialData?: any
+  initialData?: Partial<Product>
 }
 
 export function ProductForm({ categories, initialData }: ProductFormProps) {
