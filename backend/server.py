@@ -780,6 +780,7 @@ async def generate_all_outputs():
     await roadmaps_collection.delete_many({})
     
     # Store radar
+    stored_radar = []
     for item in radar_items:
         radar_item = TechRadarItem(
             name=item.get("name", "Unknown"),
@@ -789,7 +790,10 @@ async def generate_all_outputs():
             description=item.get("description", ""),
             moved=item.get("moved", 0)
         )
-        await tech_radar_collection.insert_one(radar_item.model_dump())
+        item_dict = radar_item.model_dump()
+        item_dict["created_at"] = radar_item.created_at.isoformat()
+        await tech_radar_collection.insert_one(item_dict)
+        stored_radar.append(len(stored_radar))
     
     # Store architectures
     for arch in architectures:
