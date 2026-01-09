@@ -2,8 +2,10 @@
 This is a full-stack MEAN-like application (FastAPI instead of Express) that serves as a Technology Intelligence Platform. The system uses AI to analyze technology signals, classify emergent points, and generate strategic outputs.
 
 🏗️ Detailed Schema
+
 Architecture
 Code
+
 ┌─────────────────────────────────────────────────────────────┐
 │                    TECH INTELLIGENCE PLATFORM                │
 └─────────────────────────────────────────────────────────────┘
@@ -25,6 +27,7 @@ Code
                                  │   - risks        │
                                  │   - roadmaps     │
                                  └──────────────────┘
+
 Backend Structure (backend/server.py)
 Framework: FastAPI
 Database: MongoDB with Motor (async driver)
@@ -36,6 +39,7 @@ tech_radar - Technology radar items
 architectures - Reference architecture patterns
 risk_maps - Risks and opportunities
 roadmaps - Technology adoption roadmaps
+
 API Endpoints (24 endpoints):
 Category	Endpoints	Status
 Health	/api/health	✅ Complete
@@ -53,6 +57,7 @@ State Management: Zustand
 Animations: GSAP
 Charts: Recharts
 HTTP Client: Axios
+
 Pages Implemented:
 ✅ Dashboard - Overview and statistics
 ✅ EmergentPoints - Manage technology signals
@@ -60,8 +65,10 @@ Pages Implemented:
 ✅ Architectures - Reference architecture patterns
 ✅ RiskMap - Risk and opportunity analysis
 ✅ Roadmap - Technology adoption roadmap
+
 Directory Structure:
 Code
+
 frontend/
 ├── src/
 │   ├── components/     # Reusable components
@@ -80,6 +87,7 @@ frontend/
 │   └── utils/          # Utilities
 ├── package.json
 └── vite. config.js
+
 ✅ Completeness Assessment
 Backend: ~95% Complete ✅
 Completed:
