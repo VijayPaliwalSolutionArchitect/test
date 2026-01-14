@@ -1,0 +1,1079 @@
+// ===========================================
+// HOS - Hospital Management System
+// Prisma Database Schema
+// ===========================================
+// Multi-tenant, audit-ready, clinical-safe schema
+// Supports HMS, EMR, PHR modules
+// ===========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// ENUMS - System-wide type definitions
+// ===========================================
+
+// Tenant types for multi-tenancy
+enum TenantType {
+  CLINIC
+  HOSPITAL
+  NETWORK
+}
+
+// User roles - covers all system personas
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  NURSE
+  LAB_TECH
+  RADIOLOGIST
+  PHARMACIST
+  HR
+  FINANCE
+  MARKETING
+  RECEPTIONIST
+  PATIENT
+}
+
+// Patient gender
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// Encounter types (OPD/IPD)
+enum EncounterType {
+  OPD
+  IPD
+  EMERGENCY
+  TELECONSULT
+}
+
+// Encounter status workflow
+enum EncounterStatus {
+  SCHEDULED
+  CHECKED_IN
+  IN_PROGRESS
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// Appointment status
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+// Vital types
+enum VitalType {
+  BP
+  HEART_RATE
+  TEMP
+  SPO2
+  RESPIRATORY_RATE
+  WEIGHT
+  HEIGHT
+  BMI
+  BLOOD_SUGAR
+}
+
+// Clinical note types (SOAP format)
+enum NoteType {
+  SUBJECTIVE
+  OBJECTIVE
+  ASSESSMENT
+  PLAN
+  PROGRESS
+  NURSING
+  DISCHARGE
+}
+
+// Medical order types
+enum OrderType {
+  LAB
+  RADIOLOGY
+  PROCEDURE
+  MEDICATION
+  REFERRAL
+}
+
+// Order status workflow
+enum OrderStatus {
+  ORDERED
+  SAMPLE_COLLECTED
+  IN_PROGRESS
+  RESULT_READY
+  VALIDATED
+  PUBLISHED
+  CANCELLED
+}
+
+// Invoice status
+enum InvoiceStatus {
+  DRAFT
+  DUE
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+// Payment method
+enum PaymentMethod {
+  CASH
+  CARD
+  UPI
+  INSURANCE
+  BANK_TRANSFER
+  STRIPE
+}
+
+// Bed status
+enum BedStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+  CLEANING
+}
+
+// Admission status
+enum AdmissionStatus {
+  ADMITTED
+  DISCHARGED
+  TRANSFERRED
+  DECEASED
+}
+
+// Campaign channels
+enum CampaignChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+  WHATSAPP
+}
+
+// Campaign status
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+// Domain event status
+enum EventStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  RETRYING
+}
+
+// Notification status
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+// Shift types
+enum ShiftType {
+  MORNING
+  AFTERNOON
+  NIGHT
+  CUSTOM
+}
+
+// Leave status
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// ===========================================
+// CORE PLATFORM MODELS
+// ===========================================
+
+// Tenant - Multi-tenant support
+model Tenant {
+  id        String     @id @default(uuid())
+  name      String
+  type      TenantType @default(CLINIC)
+  slug      String?    @unique
+  logo      String?
+  settings  Json?      // Tenant-specific settings
+  theme     Json?      // White-label theming
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  users          User[]
+  patients       Patient[]
+  departments    Department[]
+  encounters     Encounter[]
+  appointments   Appointment[]
+  inventoryItems InventoryItem[]
+  invoices       Invoice[]
+  campaigns      Campaign[]
+  domainEvents   DomainEvent[]
+  notifications  Notification[]
+  employees      Employee[]
+  wards          Ward[]
+  aiInteractions AIInteraction[]
+  auditLogs      AuditLog[]
+  feedbacks      Feedback[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// User - All system users (staff & patients)
+model User {
+  id            String    @id @default(uuid())
+  tenantId      String
+  email         String
+  phone         String?
+  name          String
+  passwordHash  String?
+  avatar        String?
+  role          Role      @default(PATIENT)
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  lastLoginAt   DateTime?
+  metadata      Json?     // Additional user data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  patient         Patient?
+  employee        Employee?
+  doctorEncounters Encounter[]     @relation("DoctorEncounters")
+  nurseAssignments NurseAssignment[]
+  clinicalNotes   ClinicalNote[]
+  prescriptions   Prescription[]   @relation("PrescribedBy")
+  medicalOrders   MedicalOrder[]   @relation("OrderedBy")
+  verifiedReports MedicalReport[]  @relation("VerifiedBy")
+  aiInteractions  AIInteraction[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]   @relation("NotificationRecipient")
+  sessions        Session[]
+  accounts        Account[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// Account - OAuth providers (Google SSO)
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// Session - User sessions
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// VerificationToken - Email verification
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Department - Hospital departments
+model Department {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  code        String?
+  description String?
+  headId      String?  // Department head user ID
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+  wards        Ward[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// ===========================================
+// PATIENT & CLINICAL MODELS
+// ===========================================
+
+// Patient - Patient records
+model Patient {
+  id          String    @id @default(uuid())
+  tenantId    String
+  userId      String?   @unique // Link to User for patient portal
+  mrn         String?   // Medical Record Number
+  fullName    String
+  gender      Gender
+  dob         DateTime
+  phone       String
+  email       String?
+  address     String?
+  bloodGroup  String?
+  allergies   String[]  @default([])
+  emergencyContact Json? // { name, phone, relation }
+  insuranceInfo Json?   // Insurance details
+  metadata    Json?     // Additional patient data
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  user          User?           @relation(fields: [userId], references: [id])
+  encounters    Encounter[]
+  appointments  Appointment[]
+  invoices      Invoice[]
+  admissions    Admission[]
+  prescriptions Prescription[]
+  medicalReports MedicalReport[]
+
+  @@unique([tenantId, mrn])
+  @@index([tenantId])
+  @@index([fullName])
+  @@index([phone])
+  @@index([isDeleted])
+}
+
+// Appointment - Scheduled appointments
+model Appointment {
+  id            String            @id @default(uuid())
+  tenantId      String
+  patientId     String
+  doctorId      String
+  departmentId  String?
+  encounterId   String?           @unique
+  appointmentNo String?           // Auto-generated
+  type          EncounterType     @default(OPD)
+  status        AppointmentStatus @default(SCHEDULED)
+  scheduledAt   DateTime
+  duration      Int               @default(15) // minutes
+  reason        String?
+  notes         String?
+  isFollowUp    Boolean           @default(false)
+  parentAppointmentId String?
+  checkedInAt   DateTime?
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  cancelReason  String?
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  patient     Patient     @relation(fields: [patientId], references: [id])
+  department  Department? @relation(fields: [departmentId], references: [id])
+  encounter   Encounter?  @relation(fields: [encounterId], references: [id])
+
+  @@index([tenantId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+// Encounter - Clinical visits (OPD/IPD)
+model Encounter {
+  id          String          @id @default(uuid())
+  tenantId    String
+  patientId   String
+  doctorId    String
+  encounterNo String?         // Auto-generated
+  type        EncounterType   @default(OPD)
+  status      EncounterStatus @default(SCHEDULED)
+  chiefComplaint String?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  context     Json?           // Additional context
+  aiSummary   Json?           // AI-generated summary
+  isDeleted   Boolean         @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  patient       Patient         @relation(fields: [patientId], references: [id])
+  doctor        User            @relation("DoctorEncounters", fields: [doctorId], references: [id])
+  appointment   Appointment?
+  vitals        Vital[]
+  clinicalNotes ClinicalNote[]
+  diagnoses     Diagnosis[]
+  prescriptions Prescription[]
+  medicalOrders MedicalOrder[]
+  admission     Admission?
+
+  @@index([tenantId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Vital - Patient vitals
+model Vital {
+  id          String    @id @default(uuid())
+  encounterId String
+  type        VitalType
+  value       String
+  unit        String?
+  notes       String?
+  recordedBy  String?   // User ID
+  recordedAt  DateTime  @default(now())
+
+  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+
+  @@index([encounterId])
+  @@index([type])
+  @@index([recordedAt])
+}
+
+// ClinicalNote - SOAP notes and other clinical documentation
+model ClinicalNote {
+  id          String   @id @default(uuid())
+  encounterId String
+  noteType    NoteType
+  content     String   @db.Text
+  createdBy   String
+  aiGenerated Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [createdBy], references: [id])
+
+  @@index([encounterId])
+  @@index([noteType])
+  @@index([createdBy])
+}
+
+// Diagnosis - Patient diagnoses (ICD/SNOMED)
+model Diagnosis {
+  id          String   @id @default(uuid())
+  encounterId String
+  icdCode     String?  // ICD-10 code
+  snomedCode  String?  // SNOMED CT code
+  description String
+  isPrimary   Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+
+  @@index([encounterId])
+  @@index([icdCode])
+}
+
+// Prescription - Medications prescribed
+model Prescription {
+  id           String   @id @default(uuid())
+  encounterId  String?
+  patientId    String
+  prescribedBy String
+  medication   String
+  genericName  String?
+  dosage       String
+  frequency    String   // e.g., "1-0-1", "BD", "TDS"
+  duration     String   // e.g., "7 days", "2 weeks"
+  route        String?  // e.g., "Oral", "IV", "IM"
+  instructions String?
+  quantity     Int?
+  refills      Int      @default(0)
+  isDispensed  Boolean  @default(false)
+  dispensedAt  DateTime?
+  dispensedBy  String?
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  encounter  Encounter? @relation(fields: [encounterId], references: [id])
+  patient    Patient    @relation(fields: [patientId], references: [id])
+  prescriber User       @relation("PrescribedBy", fields: [prescribedBy], references: [id])
+
+  @@index([encounterId])
+  @@index([patientId])
+  @@index([prescribedBy])
+  @@index([isDispensed])
+}
+
+// MedicalOrder - Lab/Radiology orders
+model MedicalOrder {
+  id          String      @id @default(uuid())
+  encounterId String
+  orderedBy   String
+  type        OrderType
+  status      OrderStatus @default(ORDERED)
+  testName    String
+  testCode    String?
+  priority    String      @default("ROUTINE") // STAT, URGENT, ROUTINE
+  notes       String?
+  orderedAt   DateTime    @default(now())
+  collectedAt DateTime?
+  processedAt DateTime?
+  completedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  encounter Encounter      @relation(fields: [encounterId], references: [id])
+  orderer   User           @relation("OrderedBy", fields: [orderedBy], references: [id])
+  report    MedicalReport?
+
+  @@index([encounterId])
+  @@index([orderedBy])
+  @@index([type])
+  @@index([status])
+}
+
+// MedicalReport - Lab/Radiology reports
+model MedicalReport {
+  id          String    @id @default(uuid())
+  orderId     String    @unique
+  patientId   String
+  result      Json      // Structured result data
+  findings    String?   @db.Text
+  impression  String?
+  verifiedBy  String?
+  verifiedAt  DateTime?
+  publishedAt DateTime?
+  fileUrl     String?
+  isAbnormal  Boolean   @default(false)
+  aiAnalysis  Json?     // AI-generated analysis
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  order    MedicalOrder @relation(fields: [orderId], references: [id])
+  patient  Patient      @relation(fields: [patientId], references: [id])
+  verifier User?        @relation("VerifiedBy", fields: [verifiedBy], references: [id])
+
+  @@index([patientId])
+  @@index([publishedAt])
+  @@index([isAbnormal])
+}
+
+// ===========================================
+// IPD & BED MANAGEMENT MODELS
+// ===========================================
+
+// Ward - Hospital wards
+model Ward {
+  id           String   @id @default(uuid())
+  tenantId     String
+  departmentId String?
+  name         String
+  code         String?
+  floor        String?
+  building     String?
+  capacity     Int      @default(0)
+  description  String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  beds       Bed[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+// Bed - Hospital beds
+model Bed {
+  id        String    @id @default(uuid())
+  wardId    String
+  bedNumber String
+  bedType   String?   // ICU, General, Private, Semi-Private
+  status    BedStatus @default(AVAILABLE)
+  features  String[]  @default([]) // Oxygen, Monitor, etc.
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  ward       Ward        @relation(fields: [wardId], references: [id])
+  admissions Admission[]
+
+  @@unique([wardId, bedNumber])
+  @@index([wardId])
+  @@index([status])
+}
+
+// Admission - IPD admissions
+model Admission {
+  id              String          @id @default(uuid())
+  encounterId     String          @unique
+  patientId       String
+  bedId           String?
+  admissionNo     String?         // Auto-generated
+  status          AdmissionStatus @default(ADMITTED)
+  admittedAt      DateTime        @default(now())
+  expectedDischarge DateTime?
+  dischargedAt    DateTime?
+  dischargeNotes  String?
+  dischargeSummary Json?
+  attendingDoctorId String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  encounter        Encounter         @relation(fields: [encounterId], references: [id])
+  patient          Patient           @relation(fields: [patientId], references: [id])
+  bed              Bed?              @relation(fields: [bedId], references: [id])
+  nurseAssignments NurseAssignment[]
+
+  @@index([patientId])
+  @@index([status])
+  @@index([admittedAt])
+}
+
+// NurseAssignment - Nurse to patient assignments
+model NurseAssignment {
+  id          String   @id @default(uuid())
+  admissionId String
+  nurseId     String
+  shiftType   ShiftType
+  assignedAt  DateTime @default(now())
+  endedAt     DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  nurse     User      @relation(fields: [nurseId], references: [id])
+
+  @@index([admissionId])
+  @@index([nurseId])
+}
+
+// ===========================================
+// BILLING & INVENTORY MODELS
+// ===========================================
+
+// Invoice - Patient invoices
+model Invoice {
+  id            String        @id @default(uuid())
+  tenantId      String
+  patientId     String
+  invoiceNo     String?       // Auto-generated
+  status        InvoiceStatus @default(DRAFT)
+  subtotal      Float         @default(0)
+  discount      Float         @default(0)
+  tax           Float         @default(0)
+  totalAmount   Float         @default(0)
+  paidAmount    Float         @default(0)
+  dueAmount     Float         @default(0)
+  dueDate       DateTime?
+  notes         String?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  patient  Patient       @relation(fields: [patientId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@unique([tenantId, invoiceNo])
+  @@index([tenantId])
+  @@index([patientId])
+  @@index([status])
+}
+
+// InvoiceItem - Invoice line items
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String
+  category    String?  // Consultation, Lab, Pharmacy, Room, etc.
+  quantity    Int      @default(1)
+  unitPrice   Float
+  discount    Float    @default(0)
+  total       Float
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// Payment - Payment records
+model Payment {
+  id            String        @id @default(uuid())
+  invoiceId     String
+  amount        Float
+  method        PaymentMethod
+  transactionId String?
+  status        String        @default("SUCCESS") // SUCCESS, FAILED, PENDING, REFUNDED
+  paidAt        DateTime      @default(now())
+  notes         String?
+  metadata      Json?         // Payment gateway response
+  createdAt     DateTime      @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId])
+  @@index([transactionId])
+}
+
+// InventoryItem - Inventory management
+model InventoryItem {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  sku         String?
+  category    String?   // Medication, Supplies, Equipment
+  description String?
+  quantity    Int       @default(0)
+  minStock    Int       @default(10)
+  maxStock    Int?
+  unit        String?   // Pcs, Boxes, Strips, etc.
+  costPrice   Float?
+  sellPrice   Float?
+  expiryDate  DateTime?
+  batchNo     String?
+  location    String?
+  supplierId  String?
+  isActive    Boolean   @default(true)
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, sku])
+  @@index([tenantId])
+  @@index([category])
+  @@index([quantity])
+  @@index([expiryDate])
+}
+
+// ===========================================
+// HR & PAYROLL MODELS
+// ===========================================
+
+// Employee - Staff records
+model Employee {
+  id           String    @id @default(uuid())
+  tenantId     String
+  userId       String    @unique
+  employeeNo   String?
+  designation  String
+  department   String?
+  joiningDate  DateTime?
+  salary       Float?
+  bankDetails  Json?     // { accountNo, ifsc, bankName }
+  documents    Json?     // { resume, idProof, etc. }
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  attendance  Attendance[]
+  shifts      Shift[]
+  leaves      Leave[]
+  payrolls    Payroll[]
+
+  @@unique([tenantId, employeeNo])
+  @@index([tenantId])
+  @@index([designation])
+}
+
+// Attendance - Staff attendance
+model Attendance {
+  id          String    @id @default(uuid())
+  employeeId  String
+  date        DateTime  @db.Date
+  checkIn     DateTime?
+  checkOut    DateTime?
+  status      String    @default("PRESENT") // PRESENT, ABSENT, LATE, HALF_DAY, LEAVE
+  hoursWorked Float?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+}
+
+// Shift - Staff shifts/rosters
+model Shift {
+  id         String    @id @default(uuid())
+  employeeId String
+  shiftType  ShiftType
+  date       DateTime  @db.Date
+  startTime  DateTime
+  endTime    DateTime
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([date])
+}
+
+// Leave - Staff leave requests
+model Leave {
+  id          String      @id @default(uuid())
+  employeeId  String
+  leaveType   String      // SICK, CASUAL, ANNUAL, MATERNITY, etc.
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  reason      String?
+  status      LeaveStatus @default(PENDING)
+  approvedBy  String?
+  approvedAt  DateTime?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+// Payroll - Salary records
+model Payroll {
+  id          String   @id @default(uuid())
+  employeeId  String
+  month       Int      // 1-12
+  year        Int
+  basicSalary Float
+  allowances  Float    @default(0)
+  deductions  Float    @default(0)
+  netSalary   Float
+  status      String   @default("PENDING") // PENDING, PROCESSED, PAID
+  paidAt      DateTime?
+  metadata    Json?    // Detailed breakdown
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([status])
+}
+
+// ===========================================
+// MARKETING & GROWTH MODELS
+// ===========================================
+
+// Campaign - Marketing campaigns
+model Campaign {
+  id          String         @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  channel     CampaignChannel
+  status      CampaignStatus @default(DRAFT)
+  content     Json?          // Email/SMS content
+  targetAudience Json?       // Segmentation criteria
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  stats       Json?          // { sent, delivered, opened, clicked }
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([channel])
+}
+
+// Notification - System notifications
+model Notification {
+  id        String             @id @default(uuid())
+  tenantId  String
+  userId    String
+  title     String
+  message   String
+  type      String             // APPOINTMENT, LAB_RESULT, BILLING, SYSTEM, etc.
+  status    NotificationStatus @default(PENDING)
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime           @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation("NotificationRecipient", fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Feedback - Patient feedback/NPS
+model Feedback {
+  id          String   @id @default(uuid())
+  tenantId    String
+  patientId   String?
+  encounterId String?
+  rating      Int      // 1-5 or 1-10
+  npsScore    Int?     // 0-10
+  category    String?  // CONSULTATION, LAB, PHARMACY, GENERAL
+  comment     String?
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([rating])
+}
+
+// ===========================================
+// AI & SYSTEM MODELS
+// ===========================================
+
+// AIInteraction - AI chat/copilot logs
+model AIInteraction {
+  id           String   @id @default(uuid())
+  tenantId     String
+  userId       String
+  role         Role
+  sessionId    String?
+  promptHash   String?  // For deduplication
+  prompt       String   @db.Text
+  response     String   @db.Text
+  responseHash String?
+  inputContext Json?    // Context provided to AI
+  outputData   Json?    // Structured AI output
+  modelVersion String?
+  latencyMs    Int?
+  tokensUsed   Int?
+  wasOverridden Boolean @default(false)
+  createdAt    DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// DomainEvent - Event sourcing & workflow
+model DomainEvent {
+  id          String      @id @default(uuid())
+  tenantId    String
+  actorId     String?     // User who triggered
+  entityType  String      // Patient, Encounter, Order, etc.
+  entityId    String
+  eventType   String      // PatientRegistered, AppointmentBooked, etc.
+  payload     Json        // Event data
+  status      EventStatus @default(PENDING)
+  processedAt DateTime?
+  error       String?
+  retryCount  Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([eventType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// AuditLog - Immutable audit trail
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  action     String   // CREATE, UPDATE, DELETE, VIEW, LOGIN, etc.
+  entity     String   // Table/model name
+  entityId   String?
+  oldData    Json?    // Previous state
+  newData    Json?    // New state
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
