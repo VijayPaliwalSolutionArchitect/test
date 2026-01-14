@@ -1,0 +1,175 @@
+<analysis>**original_problem_statement:**
+The user wants to build a comprehensive Hospital Management System (HOS). All requirements, including architecture, development plan, core modules, and role-based workflows, are detailed in an attached TXT file. The user has also provided dashboard images for UI/UX reference. The goal is to create a production-grade system with a modern UI/UX using the latest technologies specified by the user.
+
+**PRODUCT REQUIREMENTS:**
+- **Tech Stack:** Next.js 16.1, PostgreSQL, Prisma ORM.
+- **Core Modules:** 8 role-based dashboards (Admin, Doctor, Patient, Nurse, Lab, Pharmacy, HR, Marketing) and over 40 functional modules.
+- **Authentication:** Dual system supporting both JWT-based custom login and Google SSO for patients.
+- **AI Integration:** AI features using OpenAI's models, with the key to be mocked initially and replaced by the user later in the environment file.
+- **Data Management:** A  file was provided for initial data population and a corresponding reset script is required.
+- **Documentation:** Creation of comprehensive documentation including Specification, Local Setup, VPS Deployment, AI Integration, Configuration, and API docs.
+- **Project Scope:** This is a full production-grade system, not an MVP.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The agent has correctly interpreted the user's request to discard the initial workspace stack (React/FastAPI/MongoDB) and has started building a new application from scratch in a new directory, . A complete and detailed file and folder structure for a Next.js application has been scaffolded. This includes placeholder files for all 8 role-based dashboards, authentication pages, API routes, UI components, core libraries (auth, AI, utils), Prisma schema, and all requested documentation files. No dependencies have been installed, and no functional logic has been implemented yet.
+
+**Last working item**:
+*   **Last item agent was working:** The agent was in the middle of a large-scale scaffolding operation, creating the entire file structure for the HOS project. The last user message approved this direction, and the agent's last thought was to create the remaining essential components, indicating the file creation phase was still underway.
+*   **Status:** IN PROGRESS
+*   **Agent Testing Done:** N
+*   **Which testing method agent to use?** both
+*   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+There are no issues or bugs at this stage, as the project is in its initial scaffolding phase. The primary pending task is the entire implementation of the application.
+
+**In progress Task List**:
+*   **Task 1: Complete Project Scaffolding** (P0)
+    *   **Where to resume:** The agent was creating files and acknowledged the need to create remaining essential components. The next step should be to confirm if any structural files are missing before moving on to installing dependencies and implementing logic.
+    *   **What will be achieved with this?** A complete, but non-functional, skeleton of the Next.js project, ready for implementation.
+    *   **Status:** IN PROGRESS
+    *   **Should Test frontend/backend/both after fix?** backend
+    *   **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   **(P0) Environment Setup:**
+        *   Navigate into the  directory.
+        *   Install all Node.js dependencies from  using yarn install v1.22.22
+info No lockfile found.
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+Done in 0.12s..
+        *   Create a  file and configure the  for PostgreSQL.
+        *   Run  to create the Prisma Client based on the schema.
+    *   **(P0) Database Seeding:**
+        *   Implement the seeding logic in  using the information from the user-provided .
+        *   Execute the seed script to populate the database with initial data.
+    *   **(P1) Authentication Implementation:**
+        *   Implement the backend logic for API routes: , , .
+        *   Implement the frontend logic for the auth pages:  and .
+        *   Implement role-based access control (RBAC) to protect dashboard routes.
+*   **Future Tasks:**
+    *   **(P2) Dashboard Implementation (Admin, Doctor, Patient):** Build out the UI, create the necessary API endpoints, and connect the frontend to the backend for the core user roles.
+    *   **(P3) Remaining Dashboards Implementation:** Implement the dashboards for Nurse, Lab, Pharmacy, HR, and Marketing roles.
+    *   **(P3) AI Feature Implementation:** Implement the AI chat functionality using the mocked OpenAI setup in .
+    *   **(P4) Documentation:** Populate all the created  files in  with detailed content.
+    *   **(P4) Full System Testing:** Conduct end-to-end testing for all roles and features.
+
+**Completed work in this session**
+- Analyzed user requirements from provided documents (, ) and images.
+- Switched the project's tech stack to Next.js, PostgreSQL, and Prisma based on user's explicit command.
+- Created a new project directory: .
+- **Project Scaffolding (DONE):** Created a comprehensive file structure for the entire application, including:
+    - 
+    - Prisma schema, seed, and reset scripts ()
+    - Next.js App Router pages for all 8 dashboards and authentication ()
+    - Placeholder API routes for authentication ()
+    - Reusable UI, layout, and dashboard components ()
+    - Core libraries for auth, AI, utils, etc. ()
+    - All requested documentation files in markdown ()
+
+**Earlier issues found/mentioned but not fixed**
+- None. This is a new project build.
+
+**Known issue recurrence from previous fork**
+- None.
+
+**Code Architecture**
+A monolithic Next.js application located at . It uses the App Router for routing and API endpoints. The architecture is feature-sliced, with clear separation for components, library functions, API routes, and pages. Prisma is used as the ORM to interact with the PostgreSQL database.
+
+
+
+**Key Technical Concepts**
+*   **Framework:** Next.js
+*   **Database:** PostgreSQL
+*   **ORM:** Prisma
+*   **UI/Styling:** React, Tailwind CSS, shadcn/ui
+*   **Authentication:** JSON Web Tokens (JWT), Google SSO
+*   **AI:** OpenAI API
+
+**key DB schema**
+*   **schema.prisma:** A comprehensive schema has been created in . It defines models for , , , , , , , , , , , and more, establishing relationships between them.
+
+**changes in tech stack**
+*   The entire project has pivoted from the initial workspace stack (React, FastAPI, MongoDB) to a new stack (Next.js, PostgreSQL, Prisma) as explicitly directed by the user. The agent is building a completely new application in .
+
+**All files of reference**
+*   All created files are located within the  directory.
+*   : Defines project dependencies and scripts.
+*   : The single source of truth for the database schema.
+*   : The root layout for the entire application.
+*   : An example of a placeholder dashboard page.
+*   : This directory contains all the placeholder documentation files.
+
+**Areas that need refactoring**:
+*   None, as the project only contains placeholder code.
+
+**key api endpoints**
+The following API endpoints have been scaffolded but require implementation:
+*   
+*   
+*   
+
+**Critical Info for New Agent**
+*   **IMPORTANT:** You are working on a **brand new application** inside the  directory. **IGNORE** the old  and  folders.
+*   The user's goal is a **full production system**, not an MVP. This is a large-scale build.
+*   Your immediate next steps are to set up the development environment within : **yarn install v1.22.22
+[1/4] Resolving packages...
+success Already up-to-date.
+Done in 0.02s.**, configure the **** file for PostgreSQL, and run ****.
+*   The database seeding script () must be implemented based on the user-provided .
+*   Start the implementation with the core **Authentication** feature (JWT and Google SSO), as it is fundamental to the role-based system.
+
+**documents and test reports created in this job**
+*   
+*   
+*   
+*   
+*   
+*   
+*   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** 
+    *   **Summary:** User gave the green light to proceed with the full build, emphasizing code quality and a final review with credentials for all roles. (Status: In Progress)
+2.  **User:** 
+    *   **Summary:** User approved the plan to scaffold the project structure. (Status: Completed)
+3.  **User:** 
+    *   **Summary:** User decisively set the required tech stack, overriding any previous assumptions. (Status: Actioned)
+4.  **User:** (Uploaded artifacts and provided detailed answers)
+    *   **Summary:** User clarified the scope as a full production build, confirmed all modules are required, approved all feature requests (AI, dual auth), and provided a data seeding file. (Status: Actioned)
+
+**Project Health Check:**
+*   **Broken:** The application is currently non-functional. It is a code skeleton without installed dependencies or implemented logic.
+*   **Mocked:** AI integration is planned to be mocked until the user provides a real API key.
+
+**3rd Party Integrations**
+*   **PostgreSQL:** Database.
+*   **Prisma:** ORM.
+*   **OpenAI:** For AI features (will require a User LLM Key).
+*   **Google SSO:** For patient authentication (will require User OAuth Keys).
+
+**Testing status**
+*   **Testing agent used after significant changes:** NO
+*   **Troubleshoot agent used after agent stuck in loop:** NO
+*   **Test files created:** []
+*   **Known regressions:** []
+
+**Credentials to test flow:**
+None exist yet. The user has requested credentials for 8 roles to be provided upon project completion.
+
+**What agent forgot to execute**
+The agent has successfully scaffolded the project files but has not yet performed the foundational setup steps required to make the project runnable or to begin development. The next agent must execute these tasks first:
+1.  Navigate into the new project directory: .
+2.  Install dependencies: yarn install v1.22.22
+[1/4] Resolving packages...
+success Already up-to-date.
+Done in 0.02s..
+3.  Create and configure the  file for the database connection.
+4.  Generate the Prisma client: .</analysis>
