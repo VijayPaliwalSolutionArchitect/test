@@ -184,6 +184,7 @@ async function main() {
     'Dr. Sanjay Verma', 'Dr. Anita Desai'
   ];
 
+  const doctorPasswordHash = await hash('Doctor@123');
   const doctors = await Promise.all(
     doctorNames.map((name, i) =>
       prisma.user.create({
@@ -191,7 +192,7 @@ async function main() {
           tenantId: tenant.id,
           email: `doctor${i + 1}@hos.com`,
           name,
-          passwordHash: hash('Doctor@123'),
+          passwordHash: doctorPasswordHash,
           role: Role.DOCTOR,
           isActive: true,
           metadata: {
@@ -210,6 +211,7 @@ async function main() {
   // -----------------------------
   console.log('👩‍⚕️ Creating nurses...');
   const nurseNames = ['Nurse Rekha', 'Nurse Meena', 'Nurse Pooja', 'Nurse Deepa', 'Nurse Suman'];
+  const nursePasswordHash = await hash('Nurse@123');
 
   const nurses = await Promise.all(
     nurseNames.map((name, i) =>
@@ -218,7 +220,7 @@ async function main() {
           tenantId: tenant.id,
           email: `nurse${i + 1}@hos.com`,
           name,
-          passwordHash: hash('Nurse@123'),
+          passwordHash: nursePasswordHash,
           role: Role.NURSE,
           isActive: true,
         },
@@ -230,6 +232,7 @@ async function main() {
   // USERS - LAB TECHNICIANS (3)
   // -----------------------------
   console.log('🔬 Creating lab technicians...');
+  const labPasswordHash = await hash('Lab@123');
   const labTechs = await Promise.all(
     ['Lab Tech Ravi', 'Lab Tech Suresh', 'Lab Tech Mohan'].map((name, i) =>
       prisma.user.create({
@@ -237,7 +240,7 @@ async function main() {
           tenantId: tenant.id,
           email: `lab${i + 1}@hos.com`,
           name,
-          passwordHash: hash('Lab@123'),
+          passwordHash: labPasswordHash,
           role: Role.LAB_TECH,
           isActive: true,
         },
@@ -249,6 +252,7 @@ async function main() {
   // USERS - RADIOLOGISTS (2)
   // -----------------------------
   console.log('📡 Creating radiologists...');
+  const radioPasswordHash = await hash('Radio@123');
   const radiologists = await Promise.all(
     ['Dr. Radiology Kumar', 'Dr. Radiology Singh'].map((name, i) =>
       prisma.user.create({
@@ -256,7 +260,7 @@ async function main() {
           tenantId: tenant.id,
           email: `radio${i + 1}@hos.com`,
           name,
-          passwordHash: hash('Radio@123'),
+          passwordHash: radioPasswordHash,
           role: Role.RADIOLOGIST,
           isActive: true,
         },
@@ -268,6 +272,7 @@ async function main() {
   // USERS - PHARMACISTS (2)
   // -----------------------------
   console.log('💊 Creating pharmacists...');
+  const pharmaPasswordHash = await hash('Pharma@123');
   const pharmacists = await Promise.all(
     ['Pharmacist Anil', 'Pharmacist Sunil'].map((name, i) =>
       prisma.user.create({
@@ -275,7 +280,7 @@ async function main() {
           tenantId: tenant.id,
           email: `pharma${i + 1}@hos.com`,
           name,
-          passwordHash: hash('Pharma@123'),
+          passwordHash: pharmaPasswordHash,
           role: Role.PHARMACIST,
           isActive: true,
         },
